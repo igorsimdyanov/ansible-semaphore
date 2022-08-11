@@ -1,0 +1,20 @@
+[Unit]
+Description=Puma HTTP Server for ToDo App (production)
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/home/deploy/build_todo_app/current
+Environment="RAILS_ENV=production"
+ExecStart=/bin/bash -ic '/home/deploy/.asdf/bin/asdf exec bundle exec puma -C /home/deploy/build_todo_app/shared/puma.rb'
+ExecReload=/bin/kill -TSTP $MAINPID
+StandardOutput=append:/home/deploy/build_todo_app/current/log/puma.access.log
+StandardError=append:/home/deploy/build_todo_app/current/log/puma.error.log
+Restart=always
+RestartSec=1
+SyslogIdentifier=puma
+
+[Install]
+WantedBy=multi-user.target

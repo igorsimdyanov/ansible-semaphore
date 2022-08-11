@@ -1,0 +1,114 @@
+---
+- hosts: all
+  remote_user: admin
+  become: true
+  tasks:
+  - name: Обновление информации о пакетах apt
+    apt: update_cache=yes
+  - name: Создадим директорию для установки PostgreSQL
+    file:
+      path: /var/lib/postgresql
+      state: directory
+  - name: Добавляем пользователя базы данных postgres
+    user:
+      name: postgres
+      shell: /bin/bash
+      home: /var/lib/postgresql
+  - name: Меняем владельца для директории, куда будет установлена PostgreSQL
+    file:
+      path: /var/lib/postgresql
+      state: directory
+      owner: postgres
+      group: postgres
+  - name: Форматируем диск базы данных
+    filesystem:
+      fstype: ext4
+      dev: /dev/vdb
+  - name: Прописываем автомонтирование в /etc/fstab
+    ansible.posix.mount:
+      backup: true
+      path: /var/lib/postgresql
+      src: /dev/vdb
+      fstype: ext4
+      opts: noatime
+      state: mounted
+  - name: Добавим пользователя deploy
+    user:
+      name: deploy
+      shell: /bin/bash
+      home: /home/deploy
+      groups: sudo
+  - name: Создадим ключ ssh для пользователя deploy
+    user: name=deploy generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file=.ssh/id_rsa
+  - name: Установим git
+    apt:
+      name: git
+      state: present
+      update_cache: yes
+  - name: Установим необходимые зависимости build-essential
+    apt:
+      name: build-essential
+      state: present
+      update_cache: yes
+  - name: Установим необходимые зависимости libssl-dev
+    apt:
+      name: libssl-dev
+      state: present
+      update_cache: yes
+  - name: Установим необходимые зависимости zlib1g-dev
+    apt:
+      name: zlib1g-dev
+      state: present
+      update_cache: yes
+  - name: Установим nginx
+    apt:
+      name: nginx
+      state: present
+      update_cache: yes
+  - name: Установим необходимые зависимости libpq-dev
+    apt:
+      name: libpq-dev
+      state: present
+      update_cache: yes
+  - name: Установим PostgreSQL
+    apt:
+      name: postgresql
+      state: present
+      update_cache: yes
+  - name: Установим клиент PostgreSQL
+    apt:
+      name: postgresql-client
+      state: present
+      update_cache: yes
+  - name: Запустим сервис postgresql
+    ansible.builtin.systemd:
+      state: started
+      name: postgresql
+  - name: Установим python3
+    apt:
+      name: python3
+      state: present
+      update_cache: yes
+  - name: Установим python-dev
+    apt:
+      name: python-dev
+      state: present
+      update_cache: yes
+  - name: Установим python3-dev
+    apt:
+      name: python3-dev
+      state: present
+      update_cache: yes
+  - name: Установим python3-pip
+    apt:
+      name: python3-pip
+      state: present
+      update_cache: yes
+  - name: Установим psycopg2
+    pip:
+      name: psycopg2
+  - name: Установим acl
+    apt:
+      name: acl
+      state: present
+      update_cache: yes

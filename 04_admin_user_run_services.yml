@@ -1,0 +1,73 @@
+---
+- hosts: all
+  remote_user: admin
+  become: true
+  tasks:
+  - name: Удалим конфигурационный файл puma
+    ansible.builtin.file:
+      path: /etc/systemd/system/puma_todo_app_production.service
+      state: absent
+  - name: Копируем puma_todo_app_production.service файл в /etc/systemd/system/
+    ansible.builtin.copy:
+      src: /home/deploy/ansible_configurations/templates/puma_todo_app_production.service
+      dest: /etc/systemd/system/
+      remote_src: true
+  - name: Выполним systemctl daemon-reload
+    systemd:
+      daemon_reload: true
+  - name: Создадим папку сокета Puma
+    ansible.builtin.file:
+      path: /home/deploy/build_todo_app/shared/tmp/sockets
+      state: directory
+      owner: deploy
+      group: deploy
+  - name: Изменим владельца логов Puma
+    ansible.builtin.file:
+      path: /home/deploy/build_todo_app/shared/log
+      state: directory
+      owner: deploy
+      group: deploy
+      recurse: yes
+  - name: Создадим файл puma.access.log
+    ansible.builtin.file:
+      path: /home/deploy/build_todo_app/shared/log/puma.access.log
+      state: touch
+      owner: deploy
+      group: deploy
+  - name: Создадим файл puma.error.log
+    ansible.builtin.file:
+      path: /home/deploy/build_todo_app/shared/log/puma.error.log
+      state: touch
+      owner: deploy
+      group: deploy
+  - name: Запустим сервис Puma
+    systemd:
+      state: started
+      name: puma_todo_app_production
+      enabled: true
+  - name: Удалим конфигурационный файл nginx
+    ansible.builtin.file:
+      path: /etc/nginx/sites-available/default
+      state: absent
+  - name: Копируем готовый конфигурационный файл nginx
+    ansible.builtin.copy:
+      src: /home/deploy/ansible_configurations/templates/nginx.default
+      dest: /etc/nginx/sites-available/default
+      remote_src: true
+  - name: Перезапускаем сервис nginx
+    ansible.builtin.systemd:
+      state: restarted
+      name: nginx
+  - name: Создадим папку для Capistrano
+    ansible.builtin.file:
+      path: /home/deploy/build_todo_app/shared/config/
+      state: directory
+      owner: deploy
+      group: deploy
+  - name: Разрешим sudo без пароля
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regexp: '^%sudo'
+      line: '%sudo ALL=(ALL) NOPASSWD:ALL'
+      validate: 'visudo -cf %s'

@@ -1,0 +1,76 @@
+---
+- hosts: all
+  remote_user: admin
+  become: true
+  become_user: deploy
+  tasks:
+  - name: Клонируем репозиторий asdf
+    ansible.builtin.git:
+      repo: https://github.com/asdf-vm/asdf.git
+      dest: /home/deploy/.asdf
+  - name: Удалим файл .bashrc
+    ignore_errors: yes
+    file:
+      state: absent
+      path: /home/deploy/.bashrc
+  - name: Пересоздаём .bashrc
+    ignore_errors: yes
+    file:
+      path: /home/deploy/.bashrc
+      state: touch
+  - name: Добавим строку конфигурации в .bashrc
+    lineinfile:
+      path: /home/deploy/.bashrc
+      line: '. $HOME/.asdf/asdf.sh'
+  - name: Добавим строку конфигурации в .bashrc
+    lineinfile:
+      path: /home/deploy/.bashrc
+      line: '. $HOME/.asdf/completions/asdf.bash'
+  - name: Копируем .bashrc в .profile
+    ansible.builtin.copy:
+      src: /home/deploy/.bashrc
+      dest: /home/deploy/.profile
+      remote_src: yes
+  - name: Добавим ruby asdf плагин
+    ansible.builtin.shell: /bin/bash -ic 'asdf plugin add ruby'
+    ignore_errors: yes
+  - name: Установим ruby 3.0
+    ansible.builtin.shell: /bin/bash -ic 'asdf install ruby 3.0.0'
+    ignore_errors: yes
+  - name: Определим ruby 3.0 global
+    ansible.builtin.shell: /bin/bash -ic 'asdf global ruby 3.0.0'
+  - name: Добавим NodeJS плагин
+    ansible.builtin.shell: /bin/bash -ic 'asdf plugin add nodejs'
+    ignore_errors: yes
+  - name: Добавим Yarn плагин
+    ansible.builtin.shell: /bin/bash -ic 'asdf plugin add yarn'
+    ignore_errors: yes
+  - name: Установим NodeJS
+    ansible.builtin.shell: /bin/bash -ic 'asdf install nodejs 16.14.0'
+    ignore_errors: yes
+  - name: Установим Yarn
+    ansible.builtin.shell: /bin/bash -ic 'asdf install yarn 1.22.17'
+    ignore_errors: yes
+  - name: Установим версию NodeJS
+    ansible.builtin.shell: /bin/bash -ic 'asdf global nodejs 16.14.0'
+  - name: Установим версию Yarn
+    ansible.builtin.shell: /bin/bash -ic 'asdf global yarn 1.22.17'
+  - name: Установим bundler
+    ansible.builtin.shell: /bin/bash -ic 'gem install bundler'
+  - name: Клонируем репозиторий ansible_configurations
+    ansible.builtin.git:
+      repo: git@10.128.0.15:app/ansible_configurations.git
+      dest: /home/deploy/ansible_configurations
+      single_branch: yes
+      version: master
+      accept_newhostkey: true
+  - name: Загрузим публичный ключ jenkins
+    ansible.builtin.fetch:
+      src: /home/deploy/ansible_configurations/public_keys/jenkins.pub
+      dest: /home/semaphore/
+      flat: yes
+  - name: Добавим публичный ключ jenkins
+    ansible.posix.authorized_key:
+      user: deploy
+      state: present
+      key: "{{ lookup('file', '/home/semaphore/jenkins.pub') }}"

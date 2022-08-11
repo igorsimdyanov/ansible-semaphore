@@ -1,0 +1,13 @@
+---
+- hosts: all
+  remote_user: admin
+  tasks:
+  - name: Добавим пользователя БД deploy
+    ansible.builtin.shell: sudo -u postgres createuser -ws deploy
+    ignore_errors: yes
+  - name: Удалим продуктовую базу данных
+    ansible.builtin.shell: sudo -u postgres dropdb --if-exists todo_database_production
+  - name: Создадим продуктовую базу данных
+    ansible.builtin.shell: sudo -u postgres createdb todo_database_production
+  - name: Загрузим данные из дампа
+    ansible.builtin.shell: sudo -u postgres psql todo_database_production < /home/deploy/ansible_configurations/database_dump/todo_database_production.dump.sql
