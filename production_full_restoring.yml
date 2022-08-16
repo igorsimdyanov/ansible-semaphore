@@ -2,8 +2,8 @@
 - hosts: all
   remote_user: admin
   vars:
-    image_name: production-boot-20220813112844
-    snapshot_name: production-data-20220813113629
+    image_name: production-boot-20220816180908
+    snapshot_name: production-data-20220816181122
     core_fraction: 20
   tasks:
     - name: Создание ВМ продуктового сервера
