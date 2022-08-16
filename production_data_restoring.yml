@@ -2,9 +2,9 @@
 - hosts: all
   remote_user: admin
   vars:
-    instance_name: production-20220813115619
-    old_data_disk_name: production-data-20220813113629
-    new_snapshot_name: production-data-20220813
+    instance_name: production-20220816181517
+    old_data_disk_name: production-data-20220816181122
+    new_snapshot_name: production-data-20220816-another
     size: 1GB
   tasks:
     - name: Остановка ВМ продуктового сервера
