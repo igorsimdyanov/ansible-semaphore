@@ -1,0 +1,12 @@
+---
+- hosts: all
+  remote_user: admin
+  vars:
+    data_disk_name: disk-1660237942058
+  tasks:
+    - name: Создание образа диска данных
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute snapshot create
+        --name production-data-`date "+%Y%m%d%H%M%S"`
+        --disk-name "{{ data_disk_name }}"'

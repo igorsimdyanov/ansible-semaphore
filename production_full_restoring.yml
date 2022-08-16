@@ -1,0 +1,17 @@
+---
+- hosts: all
+  remote_user: admin
+  vars:
+    image_name: production-boot-20220813112844
+    snapshot_name: production-data-20220813113629
+    core_fraction: 20
+  tasks:
+    - name: Создание ВМ продуктового сервера
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute instance create
+        --name production-`date "+%Y%m%d%H%M%S"`
+        --create-boot-disk name="{{ image_name }}",image-name="{{ image_name }}"
+        --create-disk name="{{ snapshot_name }}",snapshot-name="{{ snapshot_name }}"
+        --core-fraction "{{ core_fraction }}"
+        --public-ip'

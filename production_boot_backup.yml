@@ -1,0 +1,13 @@
+---
+- hosts: all
+  remote_user: admin
+  vars:
+    source_disk_name: fhmr9ahaa3c0eiu67bpb
+  tasks:
+    - name: Создание образа системного диска
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute image create
+        --name production-boot-`date "+%Y%m%d%H%M%S"`
+        --family production-boot
+        --source-disk-id "{{ source_disk_name }}"'

@@ -1,0 +1,40 @@
+---
+- hosts: all
+  remote_user: admin
+  vars:
+    instance_name: production-20220813115619
+    old_data_disk_name: production-data-20220813113629
+    new_snapshot_name: production-data-20220813
+    size: 1GB
+  tasks:
+    - name: Остановка ВМ продуктового сервера
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute instance stop
+        --name "{{ instance_name }}"'
+    - name: Отключим текущий диск с данными
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute instance detach-disk
+        --name "{{ instance_name }}"
+        --disk-name "{{ old_data_disk_name }}"'
+        ignore_errors: yes
+    - name: Создадим диск с данными из снимка
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute disk create
+        --name "{{ new_snapshot_name }}"
+        --size "{{ size }}"
+        --source-snapshot-name "{{ new_snapshot_name }}"'
+    - name: Присоединим диск с данными из резервной копии
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute instance attach-disk
+        --name "{{ instance_name }}"
+        --disk-name "{{ new_snapshot_name }}"
+        --auto-delete'
+    - name: Запуск ВМ продуктового сервера
+      ansible.builtin.shell: >
+        /bin/bash -ic
+        'yc compute instance start
+        --name "{{ instance_name }}"'
