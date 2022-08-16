@@ -2,7 +2,7 @@
 - hosts: all
   remote_user: admin
   vars:
-    instance_name: production-20220816181517
+    instance_name: production-20220816184512
     old_data_disk_name: production-data-20220816181122
     new_snapshot_name: production-data-20220816184106
     size: 1GB
