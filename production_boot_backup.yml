@@ -2,7 +2,7 @@
 - hosts: all
   remote_user: admin
   vars:
-    source_disk_name: fhmr9ahaa3c0eiu67bpb
+    source_disk_name: fhmt1l533fif6lit3ls6
   tasks:
     - name: Создание образа системного диска
       ansible.builtin.shell: >
