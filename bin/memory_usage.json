@@ -1,0 +1,12 @@
+{
+   "metrics": [
+     {
+        "name": "memory_usage",
+        "labels": {
+           "vm": "10.128.0.10"
+        },
+        "type": "DGAUGE",
+        "value": 28.0
+     }
+   ]
+}

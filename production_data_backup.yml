@@ -2,7 +2,7 @@
 - hosts: all
   remote_user: admin
   vars:
-    data_disk_name: disk-1660237942058
+    data_disk_name: production-data-20220816184106
   tasks:
     - name: Создание образа диска данных
       ansible.builtin.shell: >
